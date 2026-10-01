@@ -13,14 +13,29 @@ class Plant:
         self.special_ability = special_ability
         self.lane = lane
 
+    def attack(self, zombie):
+        zombie.take_damage(self.damage)
+
+    def take_damage(self, amount):
+        self.health -= amount
+
 
 class Zombie:
-    def __init__(self, name, health, damage, walkspeed, lane):
+    def __init__(self, name, health, damage, walkspeed, distance):
         self.name = name
         self.health = health
         self.damage = damage
         self.walkspeed = walkspeed
-        self.lane = lane
+        self.distance = distance
+
+    def move(self):
+        self.distance -= self.walkspeed
+
+    def attack(self, plant):
+        plant.take_damage(self.damage)
+
+    def take_damage(self, amount):
+        self.health -= amount
 
 #variables amnd stuff
 Peashooter = Plant("Peashooter", 100, 15, None, 1)
@@ -36,7 +51,7 @@ while True:
     print("TURNING")
     ability_used = False
 
-    if Zombie.lane <= winning_lane:
+    if Zombie.distance <= winning_lane:
         winner = "Loss"
         print("Zombie reached lane 1")
         break
@@ -48,7 +63,7 @@ while True:
     for plant in (Peashooter, SnowPea):
         if plant.health > 0:
             print(plant.name + " is shooting at the zombie")
-            Zombie.health -= plant.damage
+            plant.attack(Zombie)
             if (plant.special_ability == "Freeze" and freeze_turns == 0
                     and freeze_cooldown == 0):
                 freeze_turns = 3
@@ -59,12 +74,12 @@ while True:
         winner = "Win"
         print("Zombie is dead")
         break
-    if Zombie.lane == Peashooter.lane and Peashooter.health > 0:
+    if Zombie.distance == Peashooter.lane and Peashooter.health > 0:
         print("Zombie is attacking the Peashooter")
-        Peashooter.health -= Zombie.damage
-    elif Zombie.lane == SnowPea.lane and SnowPea.health > 0:
+        Zombie.attack(Peashooter)
+    elif Zombie.distance == SnowPea.lane and SnowPea.health > 0:
         print("Zombie is attacking the SnowPea")
-        SnowPea.health -= Zombie.damage
+        Zombie.attack(SnowPea)
 
     print("Zombie health:", Zombie.health)
 
@@ -77,12 +92,12 @@ while True:
         freeze_turns -= 1
         print("Zombie is frozen")
     else:
-        Zombie.lane -= Zombie.walkspeed
-        print("Zombie walks by 1 to", Zombie.lane)
+        Zombie.move()
+        print("Zombie walks by 1 to", Zombie.distance)
 
     if freeze_cooldown > 0 and not ability_used:
         freeze_cooldown -= 1
-
+#win or lose boiiiiii
 if winner == "Win":
     print("YOU JUST LCUKY")
 elif winner == "Loss":
